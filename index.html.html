@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F4EFE6">
+<title>Персональний AI-план схуднення</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F4EFE6;
+  --surface: #FFFFFF;
+  --ink: #1B1F23;
+  --ink-2: #6E6960;
+  --ink-3: #A8A299;
+  --border: #E5DDCC;
+  --accent: #3D5A47;
+  --accent-soft: #E8EFE9;
+  --accent-ink: #1F2F25;
+  --warn: #A84A2F;
+  --warn-soft: #F7E8E1;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+button, .opt, .body-card, input[type="range"], input[type="checkbox"] { touch-action: manipulation; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); }
+html { overscroll-behavior: none; }
+body {
+  font-family: 'Onest', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 400;
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: contain;
+}
+.mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-feature-settings: 'tnum'; }
+
+.shell {
+  max-width: 460px;
+  margin: 0 auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* HEADER */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--bg);
+  padding-top: env(safe-area-inset-top);
+}
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 14px;
+  pointer-events: auto;
+}
+.brand {
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.brand-dot {
+  width: 8px; height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+.counter {
+  font-size: 12px;
+  color: var(--ink-2);
+  letter-spacing: 0.05em;
+}
+.counter b { font-weight: 500; color: var(--ink); }
+
+/* PROGRESS SCALE */
+.scale {
+  display: flex;
+  gap: 4px;
+  padding: 0 24px 20px;
+}
+.scale > span {
+  flex: 1;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  transition: background 0.3s ease;
+  position: relative;
+}
+.scale > span.done { background: var(--accent); }
+.scale > span.cur { background: var(--accent); }
+.scale > span.cur::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px; height: 4px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+/* SLIDES */
+.stage {
+  flex: 1;
+  position: relative;
+  padding: 8px 24px calc(40px + env(safe-area-inset-bottom));
+}
+.slide {
+  display: none;
+  animation: slideIn 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.slide.active { display: block; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* TYPOGRAPHY */
+h1 {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin: 0 0 12px;
+  color: var(--ink);
+}
+.lead {
+  font-size: 15px;
+  color: var(--ink-2);
+  margin: 0 0 28px;
+  line-height: 1.55;
+}
+.lead b { color: var(--ink); font-weight: 500; }
+
+/* CREATIVE PLACEHOLDERS */
+.creative {
+  background: var(--surface);
+  border: 1px dashed var(--ink-3);
+  border-radius: var(--r-lg);
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--ink-2);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+.creative .ic {
+  display: block;
+  margin: 0 auto 8px;
+  opacity: 0.5;
+}
+.creative.sm { padding: 20px 16px; }
+.creative b { color: var(--ink); font-weight: 500; }
+
+/* OPTIONS */
+.opts { display: flex; flex-direction: column; gap: 8px; }
+.opt {
+  width: 100%;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.opt:hover { border-color: var(--ink); }
+.opt:active { transform: scale(0.99); }
+.opt.sel {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+.opt.sel .mark { opacity: 1; transform: scale(1); }
+.opt.warn.sel {
+  border-color: var(--warn);
+  background: var(--warn-soft);
+}
+.mark {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mark svg { width: 12px; height: 12px; stroke: white; stroke-width: 2.5; fill: none; }
+
+/* BODY TYPE */
+.body-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.body-card {
+  padding: 20px 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  text-align: center;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--ink);
+  transition: all 0.18s ease;
+}
+.body-card:hover { border-color: var(--ink); }
+.body-card.sel {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+.body-card svg { display: block; margin: 0 auto 10px; color: var(--ink); }
+.body-card.sel svg { color: var(--accent); }
+.body-card-l { font-size: 13px; font-weight: 500; }
+
+/* SLIDERS */
+.slider-row { margin-bottom: 28px; }
+.slider-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+.slider-head .sl-label { font-size: 14px; color: var(--ink-2); }
+.slider-head .sl-val { font-size: 18px; font-weight: 500; }
+.slider-head .sl-val .unit { font-size: 13px; color: var(--ink-2); margin-left: 4px; font-weight: 400; }
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px; height: 24px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 24px; height: 24px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* NAV */
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 32px;
+}
+.btn-prim {
+  flex: 1;
+  padding: 16px 24px;
+  background: var(--ink);
+  color: var(--surface);
+  border: none;
+  border-radius: var(--r-md);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.18s ease;
+  letter-spacing: 0.01em;
+}
+.btn-prim:hover { background: var(--accent); }
+.btn-prim:active { transform: scale(0.98); }
+.btn-prim:disabled { opacity: 0.3; cursor: not-allowed; }
+.btn-prim .arrow { margin-left: 6px; }
+.btn-back {
+  padding: 14px 4px;
+  background: transparent;
+  border: none;
+  color: var(--ink-2);
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-back:hover { color: var(--ink); }
+.btn-ghost {
+  padding: 12px 16px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.btn-ghost:hover { color: var(--ink); border-color: var(--ink); }
+
+/* HERO */
+.hero { text-align: left; padding-top: 8px; }
+.hero-eyebrow {
+  display: inline-block;
+  padding: 5px 11px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.hero h1 { font-size: 28px; line-height: 1.18; margin-bottom: 14px; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.hero-cta {
+  width: 100%;
+  padding: 18px;
+  background: var(--ink);
+  color: var(--surface);
+  border: none;
+  border-radius: var(--r-md);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 8px;
+  transition: all 0.18s;
+}
+.hero-cta:hover { background: var(--accent); }
+.hero-trust {
+  display: flex;
+  gap: 24px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.hero-trust > div { flex: 1; }
+.hero-trust .num {
+  font-size: 22px;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 2px;
+}
+.hero-trust .lab {
+  font-size: 11px;
+  color: var(--ink-2);
+  line-height: 1.4;
+}
+.kill {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 18px 0 8px;
+}
+.kill span {
+  font-size: 12px;
+  color: var(--ink-2);
+  padding: 4px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+}
+
+/* LOADING */
+.load-wrap { padding: 32px 0; }
+.load-spinner {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  animation: spin 1s linear infinite;
+  margin: 0 auto 32px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.load-steps {
+  max-width: 360px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.load-step {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  opacity: 0.3;
+  transition: opacity 0.4s ease;
+  font-size: 14px;
+}
+.load-step.show { opacity: 1; }
+.load-step .check {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.load-step.show .check {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.load-step.show .check svg { display: block; }
+.load-step .check svg { display: none; width: 12px; height: 12px; stroke: white; stroke-width: 2.5; fill: none; }
+
+/* PREVIEW */
+.tag {
+  display: inline-block;
+  padding: 5px 11px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.diag {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink);
+  margin: 0 0 24px;
+}
+.diag b { font-weight: 500; color: var(--accent); }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  margin-bottom: 12px;
+}
+.card-h {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.card-h .t { font-size: 14px; font-weight: 500; }
+.card-h .s { font-size: 11px; color: var(--ink-3); letter-spacing: 0.04em; }
+.graph-wrap { margin: 0 -4px; }
+.graph-cap {
+  font-size: 11px;
+  color: var(--ink-3);
+  margin-top: 12px;
+  line-height: 1.5;
+}
+.insights { list-style: none; padding: 0; margin: 0; }
+.insights li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 0;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.insights li:last-child { border-bottom: none; }
+.insights .lock {
+  width: 16px;
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--ink-3);
+}
+.insights .blur {
+  filter: blur(4px);
+  user-select: none;
+  color: var(--ink-2);
+}
+.insights .num-tag {
+  font-size: 11px;
+  color: var(--ink-3);
+  width: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* FORM */
+.field { margin-bottom: 14px; }
+.field label {
+  display: block;
+  font-size: 13px;
+  color: var(--ink-2);
+  margin-bottom: 6px;
+}
+.field input[type="text"],
+.field input[type="email"],
+.field input[type="tel"] {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: 16px;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--ink);
+  transition: border 0.2s;
+}
+.field input:focus {
+  outline: none;
+  border-color: var(--ink);
+}
+.consent {
+  display: flex;
+  gap: 10px;
+  margin: 16px 0 24px;
+  font-size: 12px;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+.consent input { margin-top: 3px; flex-shrink: 0; }
+
+.offer {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 22px;
+}
+.offer h3 {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.offer h3::before {
+  content: '';
+  width: 16px; height: 1px;
+  background: var(--ink);
+}
+.bundle { list-style: none; padding: 0; margin: 0 0 18px; }
+.bundle li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 14px;
+  color: var(--ink);
+}
+.bundle li svg {
+  width: 16px; height: 16px;
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--accent);
+  stroke-width: 2.5;
+}
+.why {
+  background: var(--accent-soft);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  margin: 0 0 18px;
+  font-size: 13px;
+  color: var(--accent-ink);
+  line-height: 1.55;
+}
+.why b { font-weight: 500; }
+.price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 18px 0 8px;
+  border-top: 1px solid var(--border);
+}
+.price-old {
+  font-size: 15px;
+  color: var(--ink-3);
+  text-decoration: line-through;
+}
+.price-new {
+  font-size: 32px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.price-curr {
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--warn);
+  margin: 8px 0 18px;
+}
+.timer-dot {
+  width: 6px; height: 6px;
+  background: var(--warn);
+  border-radius: 50%;
+  animation: pulse 1.4s ease infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.cta {
+  width: 100%;
+  padding: 18px;
+  background: var(--ink);
+  color: var(--surface);
+  border: none;
+  border-radius: var(--r-md);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  letter-spacing: 0.01em;
+}
+.cta:hover { background: var(--accent); }
+.cta:active { transform: scale(0.99); }
+.guarantee {
+  font-size: 11px;
+  color: var(--ink-3);
+  margin: 14px 0 0;
+  line-height: 1.6;
+  text-align: center;
+}
+.disclaim {
+  font-size: 11px;
+  color: var(--ink-3);
+  line-height: 1.55;
+  margin-top: 20px;
+}
+
+/* THANKS */
+.thanks { padding: 64px 24px; text-align: center; }
+.thanks-ic {
+  width: 64px; height: 64px;
+  margin: 0 auto 24px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.thanks-ic svg { width: 28px; height: 28px; stroke: white; stroke-width: 2.5; fill: none; }
+.thanks h2 { font-size: 24px; font-weight: 500; margin: 0 0 10px; }
+.thanks p { color: var(--ink-2); font-size: 14px; line-height: 1.6; max-width: 320px; margin: 0 auto; }
+.thanks .data {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px;
+  margin-top: 28px;
+  text-align: left;
+  font-size: 11px;
+  color: var(--ink-2);
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+/* SMALL PHONES — iPhone SE, mini */
+@media (max-width: 374px) {
+  .head, .scale { padding-left: 18px; padding-right: 18px; }
+  .stage { padding-left: 18px; padding-right: 18px; }
+  h1 { font-size: 21px; }
+  .hero h1 { font-size: 24px; }
+  .lead { font-size: 14px; }
+  .hero-trust { gap: 14px; }
+  .hero-trust .num { font-size: 19px; }
+  .hero-trust .lab { font-size: 10px; }
+  .opt { padding: 14px 16px; font-size: 14px; }
+  .body-card { padding: 16px 8px 12px; }
+}
+/* TABLET + DESKTOP */
+@media (min-width: 480px) {
+  body { padding: 24px 0; }
+  .shell {
+    min-height: auto;
+    background: var(--surface);
+    border-radius: var(--r-lg);
+    border: 1px solid var(--border);
+  }
+  .topbar {
+    background: var(--surface);
+    border-top-left-radius: var(--r-lg);
+    border-top-right-radius: var(--r-lg);
+  }
+  h1 { font-size: 26px; }
+  .hero h1 { font-size: 30px; }
+}
+button:focus-visible, input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+<div class="topbar">
+<header class="head">
+  <div class="brand"><span class="brand-dot"></span><span style="color:var(--ink-3);font-weight:400;font-size:13px">логотип</span></div>
+  <div class="counter mono"><b id="cur">01</b> / 12</div>
+</header>
+
+<div class="scale" id="scale"></div>
+</div>
+
+<main class="stage">
+
+<!-- 01 — HERO -->
+<section class="slide active" data-s="1">
+  <div class="hero">
+    <span class="hero-eyebrow">AI-аналіз для українців</span>
+    <h1>Дізнайся, чому твоє тіло <em>не реагує на дієти</em> — і отримай план, побудований під нього</h1>
+    <p class="lead">Якщо ти пробувала 3+ дієти, голодування або марафони і повертала вагу — проблема не в тобі. Шаблонні програми не знали твого тіла. AI знає: проаналізує тип фігури, гормональний фон і досвід попередніх спроб, і збудує план, який працює саме для тебе.</p>
+
+    <div class="creative">
+      <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+      <b>Крео: відео-відгук "схудла на -40 кг завдяки AI" або фото "до/після"</b><br>
+      <span class="mono" style="font-size:11px">460 × 280 px</span>
+    </div>
+
+    <button class="hero-cta" data-next="2">Почати безкоштовний аналіз <span class="arrow">→</span></button>
+
+    <div class="kill">
+      <span>Не дієта</span>
+      <span>Не марафон</span>
+      <span>Не одна на всіх</span>
+    </div>
+
+    <div class="hero-trust">
+      <div><span class="num mono">10K+</span><span class="lab">кейсів українців у базі AI</span></div>
+      <div><span class="num mono">MIT</span><span class="lab">наукова основа моделі</span></div>
+      <div><span class="num mono">2 хв</span><span class="lab">займає весь аналіз</span></div>
+    </div>
+
+    <p class="disclaim">Результати залежать від виконання плану і індивідуальних особливостей. STRUNKA.AI не є медичною послугою. Перед стартом програми проконсультуйся з лікарем, особливо якщо маєш хронічні захворювання.</p>
+  </div>
+</section>
+
+<!-- 02 — SEX -->
+<section class="slide" data-s="2">
+  <h1>Хто ти?</h1>
+  <p class="lead">Чоловіче і жіноче тіло худнуть зовсім по-різному. У жінок цикл, гормони і рівень стресу впливають на вагу <b>сильніше</b>, ніж сама кількість калорій. AI враховує це з першого питання — інакше план не спрацює.</p>
+
+  <div class="opts" data-group="sex">
+    <button class="opt" data-k="sex" data-v="f" data-auto="3">Жінка<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt" data-k="sex" data-v="m" data-auto="3">Чоловік<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt" data-k="sex" data-v="other" data-auto="3">Інше / не хочу вказувати<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+  </div>
+
+  <div class="nav"><button class="btn-back" data-back>← Назад</button><span></span></div>
+</section>
+
+<!-- 03 — AGE -->
+<section class="slide" data-s="3">
+  <h1>Скільки тобі років?</h1>
+  <p class="lead">Після 30 базальний метаболізм сповільнюється на <b>2–3% кожні 10 років</b>. Після 40 у жінок додається перименопауза. Дієти, які працювали в 25, у 35 уже не дають результату — це фізіологія, не воля. AI рахує план з поправкою на твій вік.</p>
+
+  <div class="opts" data-group="age">
+    <button class="opt" data-k="age" data-v="18-27" data-auto="4"><span><span class="mono">18 – 27</span> років</span><span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt" data-k="age" data-v="28-35" data-auto="4"><span><span class="mono">28 – 35</span> років</span><span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt" data-k="age" data-v="36-45" data-auto="4"><span><span class="mono">36 – 45</span> років</span><span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt" data-k="age" data-v="46+" data-auto="4"><span><span class="mono">46+</span> років</span><span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+  </div>
+
+  <div class="nav"><button class="btn-back" data-back>← Назад</button><span></span></div>
+</section>
+
+<!-- 04 — BODY TYPE -->
+<section class="slide" data-s="4">
+  <h1>Який тип фігури найбільше схожий на твій?</h1>
+  <p class="lead">Тип фігури визначає, <b>де</b> твоє тіло запасає жир і <b>яка</b> стратегія схуднення для тебе працює. Це причина, чому одна і та сама дієта робить твою подругу стрункою, а тобі не дає нічого. Обери варіант — AI використає його як стрижень плану.</p>
+
+  <div class="body-grid">
+    <button class="body-card" data-k="body" data-v="pear" data-auto="5">
+      <svg width="56" height="84" viewBox="0 0 56 84" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="28" cy="10" r="6"/>
+        <path d="M22 18 Q22 28 19 38 Q14 52 12 64 Q11 72 16 72 L40 72 Q45 72 44 64 Q42 52 37 38 Q34 28 34 18"/>
+      </svg>
+      <div class="body-card-l">Груша</div>
+    </button>
+    <button class="body-card" data-k="body" data-v="apple" data-auto="5">
+      <svg width="56" height="84" viewBox="0 0 56 84" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="28" cy="10" r="6"/>
+        <path d="M24 18 Q15 28 12 42 Q10 56 14 66 Q18 72 24 72 L32 72 Q38 72 42 66 Q46 56 44 42 Q41 28 32 18"/>
+      </svg>
+      <div class="body-card-l">Яблуко</div>
+    </button>
+    <button class="body-card" data-k="body" data-v="rect" data-auto="5">
+      <svg width="56" height="84" viewBox="0 0 56 84" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="28" cy="10" r="6"/>
+        <path d="M22 18 L20 70 Q20 72 22 72 L34 72 Q36 72 36 70 L34 18"/>
+      </svg>
+      <div class="body-card-l">Прямокутник</div>
+    </button>
+    <button class="body-card" data-k="body" data-v="hour" data-auto="5">
+      <svg width="56" height="84" viewBox="0 0 56 84" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="28" cy="10" r="6"/>
+        <path d="M19 18 Q24 30 22 42 Q19 52 18 64 Q18 72 22 72 L34 72 Q38 72 38 64 Q37 52 34 42 Q32 30 37 18"/>
+      </svg>
+      <div class="body-card-l">Пісочний годинник</div>
+    </button>
+  </div>
+
+  <div class="nav">
+    <button class="btn-back" data-back>← Назад</button>
+    <button class="btn-ghost" data-k="body" data-v="unknown" data-auto="5">Не знаю — визнач за мене</button>
+  </div>
+</section>
+
+<!-- 05 — MEASUREMENTS -->
+<section class="slide" data-s="5">
+  <h1>Твої параметри</h1>
+  <p class="lead">Точні цифри потрібні, щоб AI розрахував твій базальний метаболізм і реалістичну ціль. Без них прогноз — фантазія. Дані використовуються один раз для аналізу і не передаються третім особам.</p>
+
+  <div class="slider-row">
+    <div class="slider-head">
+      <span class="sl-label">Зріст</span>
+      <span class="sl-val"><span class="mono" id="vH">165</span><span class="unit">см</span></span>
+    </div>
+    <input type="range" id="sH" min="140" max="210" value="165" step="1">
+  </div>
+
+  <div class="slider-row">
+    <div class="slider-head">
+      <span class="sl-label">Поточна вага</span>
+      <span class="sl-val"><span class="mono" id="vC">78</span><span class="unit">кг</span></span>
+    </div>
+    <input type="range" id="sC" min="40" max="180" value="78" step="1">
+  </div>
+
+  <div class="slider-row">
+    <div class="slider-head">
+      <span class="sl-label">Бажана вага через 6 місяців</span>
+      <span class="sl-val"><span class="mono" id="vT">62</span><span class="unit">кг</span></span>
+    </div>
+    <input type="range" id="sT" min="40" max="180" value="62" step="1">
+  </div>
+
+  <div class="nav">
+    <button class="btn-back" data-back>← Назад</button>
+    <button class="btn-prim" data-next="6">Далі <span class="arrow">→</span></button>
+  </div>
+</section>
+
+<!-- 06 — PAST FAILURES -->
+<section class="slide" data-s="6">
+  <h1>Що з цього вже не спрацювало?</h1>
+  <p class="lead">Кожен невдалий досвід — це дані. AI вчиться на твоїх минулих спробах, щоб точно знати, <b>чого не повторювати</b> в новому плані. Обери все, що ти пробувала і повертала вагу — це найважливіше питання квізу.</p>
+
+  <div class="opts">
+    <button class="opt multi" data-k="failed" data-v="diet">Дієти з підрахунком калорій<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt multi" data-k="failed" data-v="fasting">Інтервальне голодування (16/8, 18/6)<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt multi" data-k="failed" data-v="keto">Кето або низьковуглеводна<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt multi" data-k="failed" data-v="gym">Спортзал без плану харчування<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt multi" data-k="failed" data-v="marathons">Марафони схуднення в Instagram<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt multi" data-k="failed" data-v="trainer">Тренер або нутриціолог офлайн<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt multi" data-k="failed" data-v="none">Ще нічого не пробувала<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+  </div>
+
+  <div class="nav">
+    <button class="btn-back" data-back>← Назад</button>
+    <button class="btn-prim" data-next="7" data-req="failed">Продовжити <span class="arrow">→</span></button>
+  </div>
+</section>
+
+<!-- 07 — TRIGGER -->
+<section class="slide" data-s="7">
+  <h1>Що саботує тебе найчастіше?</h1>
+  <p class="lead">У більшості випадків провал — це <b>не брак сили волі</b>, а конкретний поведінковий або гормональний тригер. Поведінкова психологія показує: коли тригер незахищений, навіть найкращий план зривається на 3-му тижні. AI знайде твій і вбудує захист саме від нього.</p>
+
+  <div class="opts">
+    <button class="opt" data-k="trigger" data-v="stress" data-auto="8">Стрес-заїдання ввечері<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt" data-k="trigger" data-v="time" data-auto="8">Брак часу на готування<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt" data-k="trigger" data-v="hormones" data-auto="8">Гормональні зриви, ПМС, менопауза<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt" data-k="trigger" data-v="knowledge" data-auto="8">Не знаю як правильно харчуватись<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt" data-k="trigger" data-v="weekends" data-auto="8">Зриви на вихідних і в гостях<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt" data-k="trigger" data-v="motivation" data-auto="8">Падіння мотивації за 2–3 тижні<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+  </div>
+
+  <div class="nav"><button class="btn-back" data-back>← Назад</button><span></span></div>
+</section>
+
+<!-- 08 — HEALTH -->
+<section class="slide" data-s="8">
+  <h1>Маєш медичні стани, які впливають на план?</h1>
+  <p class="lead">Це визначає, чи можемо ми скласти безпечний план без лікарського супроводу. Якщо так — направимо тебе до спеціаліста <b>замість того, щоб продавати</b>. Якщо ні — рухаємось далі.</p>
+
+  <div class="opts">
+    <button class="opt multi" data-k="health" data-v="diabetes">Діабет 1 або 2 типу<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt multi" data-k="health" data-v="thyroid">Захворювання щитоподібної залози<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt multi" data-k="health" data-v="cardio">Серцево-судинні захворювання<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt multi" data-k="health" data-v="injury">Травми опорно-рухового апарату<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt multi warn" data-k="health" data-v="pregnant">Вагітність або грудне вигодовування<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt multi" data-k="health" data-v="none">Нічого з переліченого<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+  </div>
+
+  <p class="disclaim">У продакшні цей екран веде на окрему сторінку з рекомендацією звернутись до лікаря, якщо обрано вагітність / ГВ або серйозний діагноз.</p>
+
+  <div class="nav">
+    <button class="btn-back" data-back>← Назад</button>
+    <button class="btn-prim" data-next="9" data-req="health">Продовжити <span class="arrow">→</span></button>
+  </div>
+</section>
+
+<!-- 09 — IDENTITY -->
+<section class="slide" data-s="9">
+  <h1>Як ти хочеш почуватися через 3 місяці?</h1>
+  <p class="lead">Кілограми — це лічильник, не мета. Реальна ціль — це твій <b>ранок</b>, твій <b>одяг</b>, твоє <b>відображення</b> в дзеркалі. AI вбудовує саме твої слова в кожен крок плану — щоб ти бачила прогрес не лише на вазі.</p>
+
+  <div class="opts">
+    <button class="opt multi" data-k="identity" data-v="confident">Впевнено в улюбленому одязі<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt multi" data-k="identity" data-v="energetic">Енергійно з ранку без кави<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt multi" data-k="identity" data-v="gym">Без сорому в спортзалі або басейні<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt multi" data-k="identity" data-v="photo">Не уникати фото з друзями<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt multi" data-k="identity" data-v="kids">Бути прикладом для дітей<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+    <button class="opt multi" data-k="identity" data-v="self">Просто почати себе любити<span class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></button>
+  </div>
+
+  <div class="nav">
+    <button class="btn-back" data-back>← Назад</button>
+    <button class="btn-prim" data-next="10" data-req="identity">Далі <span class="arrow">→</span></button>
+  </div>
+</section>
+
+<!-- 10 — LOADING -->
+<section class="slide" data-s="10">
+  <div class="load-wrap">
+    <div class="load-spinner"></div>
+    <h1 style="text-align:center;font-size:22px">AI будує твій план</h1>
+    <p class="lead" style="text-align:center">Декілька секунд. Не закривай вкладку — інакше доведеться починати спочатку.</p>
+
+    <div class="load-steps">
+      <div class="load-step" data-step="1">
+        <div class="check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <span>Аналізую тип метаболізму</span>
+      </div>
+      <div class="load-step" data-step="2">
+        <div class="check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <span>Порівнюю з <span class="mono">10 234</span>+ кейсами в базі</span>
+      </div>
+      <div class="load-step" data-step="3">
+        <div class="check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <span>Розраховую персональні макроси</span>
+      </div>
+      <div class="load-step" data-step="4">
+        <div class="check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <span>Будую 6-місячний прогноз (модель MIT)</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 — PREVIEW -->
+<section class="slide" data-s="11">
+  <span class="tag">Твій профіль готовий</span>
+  <h1>Готово. Ось що AI знайшов про твоє тіло.</h1>
+  <p class="diag" id="diag">Твій профіль готовий.</p>
+
+  <div class="card">
+    <div class="card-h">
+      <span class="t">Прогноз ваги</span>
+      <span class="s mono">6 МІСЯЦІВ</span>
+    </div>
+    <div class="graph-wrap"><svg viewBox="0 0 380 140" width="100%" height="140" id="graph"></svg></div>
+    <p class="graph-cap">Прогноз AI на основі твого профілю і статистики бази. Реальні результати залежать від виконання плану.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-h">
+      <span class="t">3 ключові інсайти про твоє тіло</span>
+      <span class="s mono">LOCKED</span>
+    </div>
+    <ul class="insights">
+      <li><span class="num-tag mono">01</span><svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span class="blur">Твій базальний метаболізм нижче середнього на 12% через комбінацію віку та гормонального фону.</span></li>
+      <li><span class="num-tag mono">02</span><svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span class="blur">Головний прихований саботаж — коливання глюкози в крові ввечері після 19:00.</span></li>
+      <li><span class="num-tag mono">03</span><svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span class="blur">Оптимальне співвідношення білків, жирів і вуглеводів для твого типу — 35/35/30.</span></li>
+    </ul>
+  </div>
+
+  <div class="nav">
+    <button class="btn-back" data-back>← Назад</button>
+    <button class="btn-prim" data-next="12">Розблокувати повний план <span class="arrow">→</span></button>
+  </div>
+</section>
+
+<!-- 12 — FORM + OFFER -->
+<section class="slide" data-s="12">
+  <h1>Куди надіслати твій план?</h1>
+  <p class="lead">AI завершив аналіз. Залишилось одне — куди надіслати доступ. Після оплати план з'являється в пошті за <b>2 хвилини</b>, куратор зв'язується в той же день для онбордингу.</p>
+
+  <form id="form">
+    <div class="field">
+      <label for="name">Ім'я</label>
+      <input type="text" id="name" name="name" required autocomplete="given-name">
+    </div>
+    <div class="field">
+      <label for="email">Email — на нього прийде план</label>
+      <input type="email" id="email" name="email" required autocomplete="email">
+    </div>
+    <div class="field">
+      <label for="phone">Телефон — для куратора</label>
+      <input type="tel" id="phone" name="phone" placeholder="+380" autocomplete="tel">
+    </div>
+
+    <div class="consent">
+      <input type="checkbox" id="consent" required>
+      <label for="consent">Згодна з обробкою персональних даних і отриманням матеріалів програми на email.</label>
+    </div>
+
+    <div class="offer">
+      <h3>Що ти отримуєш сьогодні</h3>
+      <ul class="bundle">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Персональний AI-план харчування на <span class="mono">30</span> днів — оновлюється щотижня під твій прогрес</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Програма тренувань під твій тип фігури, рівень і графік</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span class="mono">15-хв</span> онлайн-консультація з сертифікованим українським куратором</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Доступ до додатка з трекером і чек-листами на <span class="mono">7</span> днів</li>
+      </ul>
+
+      <div class="why">
+        <b>Чому 290 грн, а не 3 000 як в інших.</b> Це перший крок, не повна програма. Якщо AI-план підійде — продовжиш повну версію зі знижкою для учасників тесту. Якщо ні — повернемо <span class="mono">100%</span> коштів протягом 7 днів. Ризику нуль.
+      </div>
+
+      <div class="price-row">
+        <span class="price-old mono">990 грн</span>
+        <span class="price-new mono">290</span>
+        <span class="price-curr">грн</span>
+      </div>
+
+      <div class="timer">
+        <span class="timer-dot"></span>
+        <span>Спецціна для учасників тесту діє ще <span class="mono" id="timer">14:59</span></span>
+      </div>
+
+      <button type="submit" class="cta">Отримати мій план за <span class="mono">290 грн</span></button>
+
+      <p class="guarantee">Безпечна оплата через Solidgate / WayForPay. Повернення <span class="mono">100%</span> коштів протягом <span class="mono">7</span> днів, якщо план не підійде — без зайвих запитань.</p>
+    </div>
+  </form>
+
+  <div class="creative sm" style="margin-top:20px">
+    <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="3.5"/><path d="M5 21a7 7 0 0 1 14 0"/></svg>
+    <b>Крео: відгук клієнтки з фото "до/після" і конкретною цитатою</b><br>
+    <span class="mono" style="font-size:11px">412 × 200 px</span>
+  </div>
+
+  <p class="disclaim">Результати залежать від виконання плану і індивідуальних особливостей. Не є медичною послугою. Перед стартом програми проконсультуйся з лікарем.</p>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+const TOTAL = 12;
+const state = { cur: 1, a: {} };
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+function buildScale(){
+  const sc = $('#scale');
+  if (sc.children.length) return;
+  for (let i = 0; i < TOTAL; i++) sc.appendChild(document.createElement('span'));
+}
+function updateScale(){
+  [...$('#scale').children].forEach((el, i) => {
+    el.classList.remove('done', 'cur');
+    if (i < state.cur - 1) el.classList.add('done');
+    if (i === state.cur - 1) el.classList.add('cur');
+  });
+  $('#cur').textContent = String(state.cur).padStart(2, '0');
+}
+function show(n){
+  $$('.slide').forEach(s => s.classList.toggle('active', +s.dataset.s === n));
+  state.cur = n;
+  updateScale();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  if (n === 10) runLoading();
+  if (n === 11) renderPreview();
+  if (n === 12) startTimer();
+}
+
+$$('.opt[data-k], .btn-ghost[data-k]').forEach(b => {
+  b.addEventListener('click', () => {
+    const k = b.dataset.k;
+    const v = b.dataset.v;
+    const multi = b.classList.contains('multi');
+    if (multi) {
+      state.a[k] = state.a[k] || [];
+      const i = state.a[k].indexOf(v);
+      if (i > -1) { state.a[k].splice(i, 1); b.classList.remove('sel'); }
+      else { state.a[k].push(v); b.classList.add('sel'); }
+    } else {
+      state.a[k] = v;
+      const grp = b.closest('[data-group]') || b.closest('.opts') || b.parentElement;
+      grp.querySelectorAll('.opt').forEach(o => o.classList.remove('sel'));
+      b.classList.add('sel');
+      if (b.dataset.auto) setTimeout(() => show(+b.dataset.auto), 220);
+    }
+  });
+});
+
+$$('.body-card[data-k]').forEach(c => {
+  c.addEventListener('click', () => {
+    state.a[c.dataset.k] = c.dataset.v;
+    $$('.body-card').forEach(s => s.classList.remove('sel'));
+    c.classList.add('sel');
+    if (c.dataset.auto) setTimeout(() => show(+c.dataset.auto), 240);
+  });
+});
+
+$$('[data-next]').forEach(b => {
+  if (b.classList.contains('opt') || b.classList.contains('body-card') || b.classList.contains('btn-ghost')) return;
+  b.addEventListener('click', () => {
+    const req = b.dataset.req;
+    if (req) {
+      for (const k of req.split(',')) {
+        const v = state.a[k];
+        if (!v || (Array.isArray(v) && !v.length)) {
+          b.animate([
+            { transform: 'translateX(0)' },
+            { transform: 'translateX(-6px)' },
+            { transform: 'translateX(6px)' },
+            { transform: 'translateX(0)' }
+          ], { duration: 320 });
+          return;
+        }
+      }
+    }
+    show(+b.dataset.next);
+  });
+});
+$$('[data-back]').forEach(b => b.addEventListener('click', () => {
+  if (state.cur > 1) show(state.cur - 1);
+}));
+
+const sliders = [
+  { id: 'sH', out: 'vH', key: 'height' },
+  { id: 'sC', out: 'vC', key: 'current' },
+  { id: 'sT', out: 'vT', key: 'target' }
+];
+sliders.forEach(s => {
+  const inp = document.getElementById(s.id);
+  const out = document.getElementById(s.out);
+  if (!inp || !out) return;
+  const u = () => {
+    const n = Math.round(+inp.value);
+    out.textContent = n;
+    state.a[s.key] = n;
+  };
+  inp.addEventListener('input', u);
+  u();
+});
+
+$('#form').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target;
+  state.a.name = f.name.value.trim();
+  state.a.email = f.email.value.trim();
+  state.a.phone = f.phone.value.trim();
+  document.querySelector('.shell').innerHTML = `
+    <div class="thanks">
+      <div class="thanks-ic">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h2>Готово, ${state.a.name}</h2>
+      <p>План летить на ${state.a.email}. Перевір через 2–3 хвилини, якщо не бачиш — глянь у спам. Куратор зв'яжеться сьогодні з 10:00 до 20:00.</p>
+      <div class="data mono">Зібрані дані для тесту:<br>${JSON.stringify(state.a, null, 1).slice(0, 600)}</div>
+    </div>
+  `;
+});
+
+function runLoading(){
+  const steps = $$('[data-s="10"] .load-step');
+  steps.forEach(s => s.classList.remove('show'));
+  steps.forEach((s, i) => setTimeout(() => s.classList.add('show'), (i + 1) * 900));
+  setTimeout(() => show(11), steps.length * 900 + 1000);
+}
+
+function renderPreview(){
+  const bMap = { pear: 'Груша', apple: 'Яблуко', rect: 'Прямокутник', hour: 'Пісочний годинник', unknown: 'комбінований тип' };
+  const tMap = { stress: 'стрес-заїдання ввечері', time: 'дефіцит часу', hormones: 'гормональні зриви', knowledge: 'нестачу знань про харчування', weekends: 'зриви на вихідних', motivation: 'падіння мотивації за 2–3 тижні' };
+  const b = bMap[state.a.body] || 'комбінований тип';
+  const t = tMap[state.a.trigger] || 'індивідуальні бар\'єри';
+  $('#diag').innerHTML = `Твій тип фігури — <b>${b}</b>, головний саботаж — <b>${t}</b>. Стандартні дієти давали тобі короткий результат, який поверталось, бо не враховували саме цей профіль. План, який збудував AI, обходить ці пастки.`;
+  drawGraph();
+}
+
+function drawGraph(){
+  const svg = $('#graph');
+  if (!svg) return;
+  const cw = state.a.current || 78;
+  const tw = state.a.target || 62;
+  const W = 380, H = 140;
+  const padL = 36, padR = 16, padT = 18, padB = 32;
+  const months = ['чер', 'лип', 'сер', 'вер', 'жов', 'лис', 'гру'];
+  const N = months.length;
+  const maxV = Math.max(cw, tw) + 3;
+  const minV = Math.min(cw, tw) - 3;
+  const xs = months.map((_, i) => padL + i * (W - padL - padR) / (N - 1));
+  const vals = [];
+  for (let i = 0; i < N; i++) {
+    const k = i / (N - 1);
+    const eased = 1 - Math.pow(1 - k, 1.6);
+    vals.push(cw + (tw - cw) * eased);
+  }
+  const ys = vals.map(v => padT + (1 - (v - minV) / (maxV - minV)) * (H - padT - padB));
+  const linePath = 'M ' + xs.map((x, i) => x + ' ' + ys[i]).join(' L ');
+  const areaPath = linePath + ' L ' + xs[N-1] + ' ' + (H - padB) + ' L ' + xs[0] + ' ' + (H - padB) + ' Z';
+
+  let out = '';
+  for (let i = 0; i < 3; i++) {
+    const y = padT + i * (H - padT - padB) / 2;
+    out += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#E5DDCC" stroke-width="1" stroke-dasharray="2 4"/>`;
+  }
+  out += `<text x="${padL - 8}" y="${padT + 4}" font-family="JetBrains Mono" font-size="10" fill="#A8A299" text-anchor="end">${Math.round(maxV)}</text>`;
+  out += `<text x="${padL - 8}" y="${H - padB + 4}" font-family="JetBrains Mono" font-size="10" fill="#A8A299" text-anchor="end">${Math.round(minV)}</text>`;
+  out += `<path d="${areaPath}" fill="#E8EFE9" opacity="0.7"/>`;
+  out += `<path d="${linePath}" fill="none" stroke="#3D5A47" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+  xs.forEach((x, i) => {
+    if (i === 0 || i === N - 1) {
+      out += `<circle cx="${x}" cy="${ys[i]}" r="4" fill="#3D5A47"/>`;
+      out += `<circle cx="${x}" cy="${ys[i]}" r="7" fill="none" stroke="#3D5A47" stroke-width="1" opacity="0.3"/>`;
+    } else {
+      out += `<circle cx="${x}" cy="${ys[i]}" r="2.5" fill="#3D5A47"/>`;
+    }
+  });
+  out += `<text x="${xs[0]}" y="${ys[0] - 12}" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#1B1F23" text-anchor="middle">${Math.round(cw)} кг</text>`;
+  out += `<text x="${xs[N-1]}" y="${ys[N-1] - 12}" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#1B1F23" text-anchor="middle">${Math.round(tw)} кг</text>`;
+  months.forEach((m, i) => {
+    out += `<text x="${xs[i]}" y="${H - 10}" font-family="JetBrains Mono" font-size="10" fill="#A8A299" text-anchor="middle">${m}</text>`;
+  });
+  svg.innerHTML = out;
+}
+
+let timerStarted = false;
+function startTimer(){
+  if (timerStarted) return;
+  timerStarted = true;
+  let s = 14 * 60 + 59;
+  const el = document.getElementById('timer');
+  const tick = () => {
+    const m = Math.floor(s / 60);
+    const ss = s % 60;
+    if (el) el.textContent = m + ':' + String(ss).padStart(2, '0');
+    s--;
+    if (s >= 0) setTimeout(tick, 1000);
+  };
+  tick();
+}
+
+buildScale();
+updateScale();
+})();
+</script>
+
+</body>
+</html>
